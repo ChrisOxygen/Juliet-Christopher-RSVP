@@ -1,0 +1,52 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ivory: #fbf6ec;
+  --color-burgundy: #7a2e44;
+  --color-burgundy-deep: #5e2034;
+  --color-blush: #f2808c;
+  --color-blush-soft: #f9dcd9;
+  --color-gold: #b8913f;
+
+  --font-script: var(--font-script-loaded), cursive;
+  --font-serif: var(--font-serif-loaded), Georgia, serif;
+}
+
+html {
+  background: var(--color-ivory);
+}
+
+body {
+  background:
+    radial-gradient(1200px 600px at 10% -10%, rgba(122, 46, 68, 0.1), transparent 60%),
+    radial-gradient(900px 500px at 100% 0%, rgba(217, 189, 120, 0.25), transparent 60%),
+    radial-gradient(900px 600px at 0% 100%, rgba(217, 189, 120, 0.2), transparent 60%),
+    var(--color-ivory);
+  color: var(--color-burgundy-deep);
+  font-family: var(--font-serif-loaded), Georgia, serif;
+  min-height: 100dvh;
+}
+
+.gold-rule {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--color-gold), transparent);
+}
+
+.arch {
+  border-radius: 999px 999px 24px 24px / 220px 220px 24px 24px;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.rise {
+  animation: rise 0.7s ease both;
+}
