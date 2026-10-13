@@ -17,6 +17,14 @@ Built with Next.js 15, React 19, Tailwind CSS 4 and Zod.
 - Closes the form after the RSVP deadline and shows the RSVP phone number instead. The deadline is checked in the browser page and again on the server.
 - On desktop, the invitation text is on the left and the form is on the right. On mobile, the form comes first and the full details follow below it.
 
+### Background music
+
+- A soft, generated chord pad with gentle bell notes plays quietly in the background. It is made in the browser with the Web Audio API, so there is no audio file.
+- It tries to start 2 seconds after the page has finished loading and fades in over about 6 seconds.
+- Most browsers block sound until the visitor interacts with the page, and phones nearly always do. In that case the music starts on the visitor's first tap, click or key press instead.
+- A round speaker button in the bottom-right corner mutes and unmutes it. Once a visitor mutes it, it stays off. It also pauses while the tab is hidden.
+- The code is in [components/MusicPlayer.tsx](components/MusicPlayer.tsx). The volume (`LEVEL`) and start delay (`START_DELAY_MS`) are at the top of that file.
+
 ### Protection against spam
 
 - A hidden honeypot field catches bots. Their submissions look successful but are not saved.
@@ -87,7 +95,7 @@ This creates `rsvp-qr.png` (for print) and `rsvp-qr.svg`, in burgundy on ivory. 
 
 ```
 app/            Page, layout, styles and the /api/rsvp endpoint
-components/     RSVP form and the decorative rings
+components/     RSVP form, countdown, music player and the decorative rings
 lib/            Wedding details, validation schema, Notion client
 scripts/qr.mjs  QR code generator
 ```

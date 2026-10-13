@@ -1,5 +1,6 @@
 import RsvpForm from "@/components/RsvpForm";
 import Countdown from "@/components/Countdown";
+import MusicPlayer from "@/components/MusicPlayer";
 import { Rings } from "@/components/Decor";
 import { wedding } from "@/lib/wedding";
 
@@ -11,6 +12,7 @@ export default function Home() {
 
   return (
     <main className="relative mx-auto max-w-6xl overflow-hidden px-4 pb-12 pt-8 lg:flex lg:min-h-dvh lg:items-center lg:py-6">
+      <MusicPlayer />
       <Rings className="pointer-events-none fixed right-5 top-6 hidden w-20 opacity-70 min-[1360px]:block" />
       <Rings className="pointer-events-none fixed bottom-6 left-5 hidden w-20 opacity-70 min-[1360px]:block" />
 
