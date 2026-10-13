@@ -1,10 +1,14 @@
 export const wedding = {
   bride: "Juliet John",
   groom: "Christopher Okafor",
+  // Ceremony start (Lagos time), used by the countdown.
+  eventISO: "2026-12-23T11:00:00+01:00",
   dateLabel: "Wednesday | 23rd | December 2026",
-  // RSVPs close the day before; adjust as needed.
-  deadlineISO: "2026-12-16T23:59:59+01:00",
-  deadlineLabel: "16th December 2026",
+  // Shorter form for small screens, so it never wraps.
+  dateLabelShort: "23rd December 2026",
+  // RSVPs close at the end of this day (Lagos time).
+  deadlineISO: "2026-11-15T23:59:59+01:00",
+  deadlineLabel: "Nov. 15, 2026",
   families: [
     {
       head: "Apostle Ogbonna John",

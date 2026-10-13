@@ -77,7 +77,7 @@ This creates `rsvp-qr.png` (for print) and `rsvp-qr.svg`, in burgundy on ivory. 
 
 ## Editing the content
 
-- Names, families, venues, times, colours, RSVP phone number and deadline are in [lib/wedding.ts](lib/wedding.ts). The deadline is `deadlineISO`, currently 16 December 2026.
+- Names, families, venues, times, colours, RSVP phone number and deadline are in [lib/wedding.ts](lib/wedding.ts). The deadline is `deadlineISO`, currently 15 November 2026 (end of day, Lagos time). Update `deadlineLabel` to match.
 - The page layout is in [app/page.tsx](app/page.tsx).
 - The form is in [components/RsvpForm.tsx](components/RsvpForm.tsx), and its validation rules are in [lib/schema.ts](lib/schema.ts).
 - The Notion save is in [lib/notion.ts](lib/notion.ts), called from [app/api/rsvp/route.ts](app/api/rsvp/route.ts).
