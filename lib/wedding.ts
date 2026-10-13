@@ -38,5 +38,5 @@ export const wedding = {
     { name: "Gold", hex: "#b8913f" },
     { name: "White", hex: "#ffffff" },
   ],
-  rsvpPhone: "07034670696",
+  rsvpPhone: "08076578137",
 } as const;
