@@ -9,7 +9,6 @@ const SRC = "/audio/golibe-flavour.MP3";
 const LEVEL = 0.2; // volume (0 to 1). Keep it gentle.
 const FADE_IN_MS = 4000;
 const FADE_OUT_MS = 600;
-const START_DELAY_MS = 1000;
 
 type Mode = "off" | "playing" | "muted";
 
@@ -59,14 +58,13 @@ export default function MusicPlayer() {
   useEffect(() => {
     const a = new Audio(SRC);
     a.loop = true;
-    a.preload = "none";
+    a.preload = "auto";
     a.volume = 0;
     audio.current = a;
 
-    let startTimer: number | undefined;
 
     // The first tap, click or key press starts the music if the timed start was refused.
-    const events = ["click", "touchend", "pointerup", "keydown"] as const;
+    const events = ["pointerdown", "mousedown", "click", "touchend", "pointerup", "keydown"] as const;
     const removeGesture = () => events.forEach((ev) => window.removeEventListener(ev, onGesture));
     function onGesture(ev: Event) {
       if ((ev.target as Element | null)?.closest?.("[data-music-toggle]")) return;
@@ -75,13 +73,10 @@ export default function MusicPlayer() {
     }
     events.forEach((ev) => window.addEventListener(ev, onGesture));
 
-    const arm = () => {
-      startTimer = window.setTimeout(() => {
-        if (!userMuted.current) void begin();
-      }, START_DELAY_MS);
-    };
-    if (document.readyState === "complete") arm();
-    else window.addEventListener("load", arm, { once: true });
+    // Try to start straight away. If the browser refuses, the gesture handler above takes over.
+    if (!userMuted.current) {
+      void begin().then((ok) => ok && removeGesture());
+    }
 
     const onVisibility = () => {
       if (document.hidden) {
@@ -95,9 +90,7 @@ export default function MusicPlayer() {
     document.addEventListener("visibilitychange", onVisibility);
 
     return () => {
-      window.clearTimeout(startTimer);
       window.clearInterval(fadeTimer.current);
-      window.removeEventListener("load", arm);
       removeGesture();
       document.removeEventListener("visibilitychange", onVisibility);
       a.pause();
