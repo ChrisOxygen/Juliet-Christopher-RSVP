@@ -5,11 +5,11 @@ import { useCallback, useEffect, useRef, useState } from "react";
 // Background soundtrack played from public/audio. Starts on the first visitor
 // interaction if the browser blocks autoplay, and loops quietly.
 
-const SRC = "/audio/ada-ada-instrumental.MP3";
+const SRC = "/audio/golibe-flavour.MP3";
 const LEVEL = 0.2; // volume (0 to 1). Keep it gentle.
 const FADE_IN_MS = 4000;
 const FADE_OUT_MS = 600;
-const START_DELAY_MS = 3000;
+const START_DELAY_MS = 1000;
 
 type Mode = "off" | "playing" | "muted";
 
