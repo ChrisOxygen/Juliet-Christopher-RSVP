@@ -1,9 +1,12 @@
 "use client";
 
+import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { wedding } from "@/lib/wedding";
 
-// Background soundtrack played from public/audio. Starts on the first visitor
-// interaction if the browser blocks autoplay, and loops quietly.
+// Background soundtrack played from public/audio, loops quietly. Browsers only
+// allow sound after a tap, so a full-screen welcome gate asks guests to open the
+// invitation; that tap starts the music.
 
 const SRC = "/audio/golibe-flavour.MP3";
 const LEVEL = 0.2; // volume (0 to 1). Keep it gentle.
@@ -14,6 +17,8 @@ type Mode = "off" | "playing" | "muted";
 
 export default function MusicPlayer() {
   const [mode, setMode] = useState<Mode>("off");
+  const [entered, setEntered] = useState(false);
+  const [gateGone, setGateGone] = useState(false);
   const audio = useRef<HTMLAudioElement | null>(null);
   const fadeTimer = useRef<number | undefined>(undefined);
   const userMuted = useRef(false);
@@ -62,21 +67,8 @@ export default function MusicPlayer() {
     a.volume = 0;
     audio.current = a;
 
-
-    // The first tap, click or key press starts the music if the timed start was refused.
-    const events = ["pointerdown", "mousedown", "click", "touchend", "pointerup", "keydown"] as const;
-    const removeGesture = () => events.forEach((ev) => window.removeEventListener(ev, onGesture));
-    function onGesture(ev: Event) {
-      if ((ev.target as Element | null)?.closest?.("[data-music-toggle]")) return;
-      if (userMuted.current) return;
-      void begin().then((ok) => ok && removeGesture());
-    }
-    events.forEach((ev) => window.addEventListener(ev, onGesture));
-
-    // Try to start straight away. If the browser refuses, the gesture handler above takes over.
-    if (!userMuted.current) {
-      void begin().then((ok) => ok && removeGesture());
-    }
+    // If the browser happens to allow autoplay, skip the gate.
+    void begin().then((ok) => ok && setEntered(true));
 
     const onVisibility = () => {
       if (document.hidden) {
@@ -91,13 +83,26 @@ export default function MusicPlayer() {
 
     return () => {
       window.clearInterval(fadeTimer.current);
-      removeGesture();
       document.removeEventListener("visibilitychange", onVisibility);
       a.pause();
       a.src = "";
       audio.current = null;
     };
   }, [begin, pause]);
+
+  // Keep the page from scrolling behind the gate.
+  useEffect(() => {
+    document.body.style.overflow = entered ? "" : "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [entered]);
+
+  function enter() {
+    userMuted.current = false;
+    void begin(); // must run inside the tap so the browser allows sound
+    setEntered(true);
+  }
 
   function toggle() {
     if (mode === "playing") {
@@ -113,6 +118,49 @@ export default function MusicPlayer() {
   const playing = mode === "playing";
 
   return (
+    <>
+    {!gateGone && (
+      <div
+        role="dialog"
+        aria-label="Welcome"
+        onTransitionEnd={() => entered && setGateGone(true)}
+        className={`fixed inset-0 z-[60] flex flex-col items-center justify-end overflow-hidden bg-burgundy-deep text-ivory transition-opacity duration-700 ${
+          entered ? "pointer-events-none opacity-0" : "opacity-100"
+        }`}
+      >
+        <Image
+          src="/IMG_8732.webp"
+          alt=""
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover object-[70%_0%]"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-burgundy-deep via-burgundy-deep/60 to-transparent" />
+        <div className="relative z-10 flex w-full max-w-md flex-col items-center px-6 pb-12 text-center">
+          <p className="text-sm uppercase tracking-[0.3em] text-ivory/90">
+            You are invited to the wedding of
+          </p>
+          <h1 className="mt-3 font-script text-5xl leading-tight sm:text-6xl">
+            {wedding.bride} <span className="text-gold">&amp;</span>
+            <br />
+            {wedding.groom}
+          </h1>
+          <p className="mt-3 text-sm uppercase tracking-[0.2em] text-ivory/90">
+            {wedding.dateLabelShort}
+          </p>
+          <div className="gold-rule my-5 w-40" />
+          <button
+            type="button"
+            data-music-toggle
+            onClick={enter}
+            className="rounded-full border border-gold bg-ivory/10 px-8 py-3 text-lg uppercase tracking-[0.25em] text-ivory backdrop-blur-sm transition hover:bg-ivory/20 active:scale-[0.98]"
+          >
+            Open invitation
+          </button>
+        </div>
+      </div>
+    )}
     <button
       type="button"
       data-music-toggle
@@ -139,5 +187,6 @@ export default function MusicPlayer() {
         )}
       </svg>
     </button>
+    </>
   );
 }
