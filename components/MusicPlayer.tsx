@@ -2,169 +2,70 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
-// Soft synthesized wedding ambience: slow warm chords with the odd gentle bell,
-// generated with the Web Audio API so no audio file is needed.
+// Background soundtrack played from public/audio. Starts on the first visitor
+// interaction if the browser blocks autoplay, and loops quietly.
 
-const LEVEL = 0.22; // master volume (0 to 1). Keep it gentle.
-const FADE_IN_SECONDS = 6;
-const CHORD_SECONDS = 8;
-const START_DELAY_MS = 2000;
-
-// D maj7, B min7, G maj7, A add9 (a calm I-vi-IV-V loop).
-const CHORDS = [
-  [146.83, 220.0, 293.66, 369.99, 554.37],
-  [123.47, 185.0, 246.94, 293.66, 369.99],
-  [98.0, 196.0, 246.94, 293.66, 369.99],
-  [110.0, 164.81, 220.0, 277.18, 329.63],
-];
-const BELLS = [587.33, 659.25, 739.99, 880.0, 987.77, 1108.73];
-
-type Engine = {
-  ctx: AudioContext;
-  master: GainNode;
-  bus: GainNode;
-  chordIndex: number;
-  chordTimer?: number;
-  bellTimer?: number;
-  suspendTimer?: number;
-  running: boolean;
-};
+const SRC = "/audio/ada-ada-instrumental.MP3";
+const LEVEL = 0.2; // volume (0 to 1). Keep it gentle.
+const FADE_IN_MS = 4000;
+const FADE_OUT_MS = 600;
+const START_DELAY_MS = 3000;
 
 type Mode = "off" | "playing" | "muted";
 
-function reverbImpulse(ctx: AudioContext) {
-  const seconds = 3.5;
-  const length = Math.floor(ctx.sampleRate * seconds);
-  const buffer = ctx.createBuffer(2, length, ctx.sampleRate);
-  for (let c = 0; c < 2; c++) {
-    const data = buffer.getChannelData(c);
-    for (let i = 0; i < length; i++) {
-      data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / length, 2.5);
-    }
-  }
-  return buffer;
-}
-
-function createEngine(): Engine {
-  const ctx = new AudioContext();
-  const master = ctx.createGain();
-  master.gain.value = 0;
-  const bus = ctx.createGain();
-  const dry = ctx.createGain();
-  dry.gain.value = 0.5;
-  const wet = ctx.createGain();
-  wet.gain.value = 0.6;
-  const reverb = ctx.createConvolver();
-  reverb.buffer = reverbImpulse(ctx);
-  const limiter = ctx.createDynamicsCompressor();
-
-  bus.connect(dry).connect(master);
-  bus.connect(reverb).connect(wet).connect(master);
-  master.connect(limiter).connect(ctx.destination);
-
-  return { ctx, master, bus, chordIndex: 0, running: false };
-}
-
-function playChord(e: Engine, freqs: number[]) {
-  const { ctx, bus } = e;
-  const t = ctx.currentTime;
-  freqs.forEach((f, i) => {
-    [-4, 4].forEach((cents) => {
-      const osc = ctx.createOscillator();
-      osc.type = i < 2 ? "sine" : "triangle";
-      osc.frequency.value = f;
-      osc.detune.value = cents;
-      const filter = ctx.createBiquadFilter();
-      filter.type = "lowpass";
-      filter.frequency.value = 1400;
-      const gain = ctx.createGain();
-      gain.gain.setValueAtTime(0, t);
-      gain.gain.linearRampToValueAtTime(0.03, t + CHORD_SECONDS * 0.4);
-      gain.gain.linearRampToValueAtTime(0, t + CHORD_SECONDS + 2);
-      osc.connect(filter).connect(gain).connect(bus);
-      osc.start(t);
-      osc.stop(t + CHORD_SECONDS + 2.1);
-    });
-  });
-}
-
-function playBell(e: Engine, freq: number) {
-  const { ctx, bus } = e;
-  const t = ctx.currentTime;
-  const osc = ctx.createOscillator();
-  osc.type = "sine";
-  osc.frequency.value = freq;
-  const gain = ctx.createGain();
-  gain.gain.setValueAtTime(0, t);
-  gain.gain.linearRampToValueAtTime(0.05, t + 0.02);
-  gain.gain.exponentialRampToValueAtTime(0.0001, t + 4);
-  osc.connect(gain).connect(bus);
-  osc.start(t);
-  osc.stop(t + 4.1);
-}
-
-function schedule(e: Engine) {
-  const chord = () => playChord(e, CHORDS[e.chordIndex++ % CHORDS.length]);
-  const bell = () => {
-    playBell(e, BELLS[Math.floor(Math.random() * BELLS.length)]);
-    e.bellTimer = window.setTimeout(bell, 3000 + Math.random() * 4000);
-  };
-  chord();
-  e.chordTimer = window.setInterval(chord, CHORD_SECONDS * 1000);
-  e.bellTimer = window.setTimeout(bell, 3000);
-}
-
-function unschedule(e: Engine) {
-  window.clearInterval(e.chordTimer);
-  window.clearTimeout(e.bellTimer);
-}
-
-function fadeTo(e: Engine, level: number, seconds: number) {
-  const now = e.ctx.currentTime;
-  const g = e.master.gain;
-  g.cancelScheduledValues(now);
-  g.setValueAtTime(g.value, now);
-  g.linearRampToValueAtTime(level, now + seconds);
-}
-
 export default function MusicPlayer() {
   const [mode, setMode] = useState<Mode>("off");
-  const engine = useRef<Engine | null>(null);
+  const audio = useRef<HTMLAudioElement | null>(null);
+  const fadeTimer = useRef<number | undefined>(undefined);
   const userMuted = useRef(false);
   const resumeOnShow = useRef(false);
 
+  const fadeTo = useCallback((target: number, ms: number, done?: () => void) => {
+    const a = audio.current;
+    if (!a) return;
+    window.clearInterval(fadeTimer.current);
+    const from = a.volume;
+    const start = performance.now();
+    fadeTimer.current = window.setInterval(() => {
+      const t = Math.min(1, (performance.now() - start) / ms);
+      a.volume = from + (target - from) * t;
+      if (t >= 1) {
+        window.clearInterval(fadeTimer.current);
+        done?.();
+      }
+    }, 50);
+  }, []);
+
   const begin = useCallback(async (): Promise<boolean> => {
-    const e = (engine.current ??= createEngine());
-    window.clearTimeout(e.suspendTimer);
-    // Browsers may leave resume() pending when autoplay is blocked, so don't wait forever.
-    await Promise.race([
-      e.ctx.resume().catch(() => {}),
-      new Promise((r) => setTimeout(r, 400)),
-    ]);
-    if (e.ctx.state !== "running") return false;
-    if (!e.running) {
-      e.running = true;
-      schedule(e);
+    const a = audio.current;
+    if (!a) return false;
+    try {
+      if (a.paused) a.volume = 0;
+      await a.play();
+    } catch {
+      return false; // autoplay blocked
     }
-    fadeTo(e, LEVEL, FADE_IN_SECONDS);
+    fadeTo(LEVEL, FADE_IN_MS);
     setMode("playing");
     return true;
-  }, []);
+  }, [fadeTo]);
 
   const pause = useCallback(() => {
-    const e = engine.current;
-    if (!e || !e.running) return;
-    e.running = false;
-    unschedule(e);
-    fadeTo(e, 0, 0.8);
-    e.suspendTimer = window.setTimeout(() => void e.ctx.suspend(), 900);
-  }, []);
+    const a = audio.current;
+    if (!a || a.paused) return;
+    fadeTo(0, FADE_OUT_MS, () => a.pause());
+  }, [fadeTo]);
 
   useEffect(() => {
+    const a = new Audio(SRC);
+    a.loop = true;
+    a.preload = "none";
+    a.volume = 0;
+    audio.current = a;
+
     let startTimer: number | undefined;
 
-    // Autoplay is often blocked until the visitor interacts, so the first
-    // tap, click or key press starts the music if the timed start was refused.
+    // The first tap, click or key press starts the music if the timed start was refused.
     const events = ["click", "touchend", "pointerup", "keydown"] as const;
     const removeGesture = () => events.forEach((ev) => window.removeEventListener(ev, onGesture));
     function onGesture(ev: Event) {
@@ -184,7 +85,7 @@ export default function MusicPlayer() {
 
     const onVisibility = () => {
       if (document.hidden) {
-        resumeOnShow.current = engine.current?.running ?? false;
+        resumeOnShow.current = !a.paused;
         pause();
       } else if (resumeOnShow.current && !userMuted.current) {
         resumeOnShow.current = false;
@@ -195,16 +96,13 @@ export default function MusicPlayer() {
 
     return () => {
       window.clearTimeout(startTimer);
+      window.clearInterval(fadeTimer.current);
       window.removeEventListener("load", arm);
       removeGesture();
       document.removeEventListener("visibilitychange", onVisibility);
-      const e = engine.current;
-      if (e) {
-        unschedule(e);
-        window.clearTimeout(e.suspendTimer);
-        void e.ctx.close();
-        engine.current = null;
-      }
+      a.pause();
+      a.src = "";
+      audio.current = null;
     };
   }, [begin, pause]);
 

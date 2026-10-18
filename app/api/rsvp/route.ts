@@ -46,13 +46,13 @@ export async function POST(req: Request) {
     );
   }
 
-  const { name, guest_count, phone, message, website } = parsed.data;
+  const { name, invited_by, guest_count, phone, message, website } = parsed.data;
 
   // Honeypot tripped: pretend success so bots move on.
   if (website) return NextResponse.json({ ok: true });
 
   try {
-    await saveRsvpToNotion({ name, guest_count, phone, message });
+    await saveRsvpToNotion({ name, invited_by, guest_count, phone, message });
   } catch (error) {
     console.error("RSVP save to Notion failed", error);
     return NextResponse.json({ error: "Could not save your RSVP. Please try again." }, { status: 500 });
@@ -64,7 +64,7 @@ export async function POST(req: Request) {
     fetch(hook, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, guest_count, phone, message }),
+      body: JSON.stringify({ name, invited_by, guest_count, phone, message }),
     }).catch(() => {});
   }
 

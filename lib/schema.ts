@@ -2,6 +2,7 @@ import { z } from "zod";
 
 export const rsvpSchema = z.object({
   name: z.string().trim().min(2, "Please enter your full name").max(100),
+  invited_by: z.string().trim().min(2, "Please tell us who invited you").max(100),
   guest_count: z.number().int().min(1).max(10),
   phone: z
     .string()

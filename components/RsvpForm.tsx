@@ -57,6 +57,7 @@ export default function RsvpForm({ closed }: { closed: boolean }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: f.get("name"),
+          invited_by: f.get("invited_by"),
           guest_count: Number(f.get("guest_count") ?? 1),
           phone: f.get("phone"),
           message: f.get("message"),
@@ -98,6 +99,19 @@ export default function RsvpForm({ closed }: { closed: boolean }) {
           required
           autoComplete="name"
           placeholder="Your name"
+          className={input}
+        />
+      </div>
+
+      <div>
+        <label htmlFor="invited_by" className={label}>
+          Invited by
+        </label>
+        <input
+          id="invited_by"
+          name="invited_by"
+          required
+          placeholder="Example: Mrs. John Ogbonna or Miss Deborah John"
           className={input}
         />
       </div>

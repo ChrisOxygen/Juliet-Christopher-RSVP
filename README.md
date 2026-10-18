@@ -42,6 +42,7 @@ Create a database (a full-page table) with these columns. The names must match e
 | Column    | Type   |
 | --------- | ------ |
 | `Name`    | Title  |
+| `Invited by` | Text |
 | `Guests`  | Number |
 | `Phone`   | Phone  |
 | `Message` | Text   |

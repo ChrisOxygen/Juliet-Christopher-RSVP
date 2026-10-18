@@ -39,17 +39,17 @@ export default function Home() {
         </section>
 
         <section
-          className="rise text-center lg:[grid-area:details] lg:mt-6 lg:self-start"
+          className="rise text-center   lg:[grid-area:details] lg:mt-6 lg:self-start "
           style={{ animationDelay: "0.3s" }}
         >
           {/* <div className="gold-rule mx-auto mb-4 w-56" /> */}
           <p className="font-serif text-lg italic">The families of</p>
           {wedding.families.map((f, i) => (
             <div key={f.head}>
-              <p className="mt-1 text-lg font-bold uppercase tracking-wide text-burgundy">
+              <p className="mt-1 text-base font-bold uppercase tracking-wide text-burgundy">
                 {f.head}
               </p>
-              <p className="mx-auto max-w-md text-base leading-snug">
+              <p className="mx-auto max-w-md text-sm leading-snug">
                 {f.from}
               </p>
               {i === 0 && (
@@ -58,13 +58,13 @@ export default function Home() {
             </div>
           ))}
 
-          <p className="mx-auto mt-4 max-w-md text-base leading-snug">
+          <p className="mx-auto mt-4 max-w-md font-serif text-xl font-bold leading-snug text-burgundy">
             Joyfully request the honor of your presence at the wedding
             celebration of their beloved children
           </p>
           <div className="gold-rule mx-auto my-4 w-56" />
 
-          <div className="space-y-3">
+          <div className="mx-auto space-y-3 max-w-[400px]">
             {wedding.events.map((e) => (
               <p key={e.title} className="text-base leading-snug">
                 <span className="font-bold uppercase text-burgundy">

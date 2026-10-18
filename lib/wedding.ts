@@ -11,7 +11,7 @@ export const wedding = {
   deadlineLabel: "Nov. 15, 2026",
   families: [
     {
-      head: "Apostle Ogbonna John",
+      head: "Apostle and Deaconess Ogbonna John",
       from: "of Umuohu Okpula Ndume Ibeku, Umuahia, North LGA, Abia State",
     },
     {
@@ -21,13 +21,13 @@ export const wedding = {
   ],
   events: [
     {
-      title: "Wedding Ceremony",
-      venue: "Reens Suites & Apartments, PHC Field",
+      title: "Joining Ceremony",
+      venue: "Reens Suites & Apartments, Reens Close, Prime Gate Ave, off Chief G U Ake Road (Eliozu Road)",
       time: "11:00 AM",
     },
     {
       title: "Wedding Reception",
-      venue: "Reens Suites & Apartments, PHC Main Hall",
+      venue: "Reens Suites & Apartments, Reens Close, Prime Gate Ave, off Chief G U Ake Road (Eliozu Road)",
       time: "1:00 PM",
     },
   ],

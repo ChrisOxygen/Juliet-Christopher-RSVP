@@ -1,14 +1,15 @@
 type NewRsvp = {
   name: string;
+  invited_by: string;
   guest_count: number;
   phone?: string;
   message?: string;
 };
 
 // Database columns expected in Notion:
-// Name (title), Guests (number), Phone (phone), Message (text).
+// Name (title), Invited by (text), Guests (number), Phone (phone), Message (text).
 // Add a "Created time" column in Notion if you want a timestamp.
-export async function saveRsvpToNotion({ name, guest_count, phone, message }: NewRsvp) {
+export async function saveRsvpToNotion({ name, invited_by, guest_count, phone, message }: NewRsvp) {
   const token = process.env.NOTION_TOKEN;
   const databaseId = process.env.NOTION_DATABASE_ID;
   if (!token || !databaseId) {
@@ -26,6 +27,7 @@ export async function saveRsvpToNotion({ name, guest_count, phone, message }: Ne
       parent: { database_id: databaseId },
       properties: {
         Name: { title: [{ text: { content: name } }] },
+        "Invited by": { rich_text: [{ text: { content: invited_by } }] },
         Guests: { number: guest_count },
         Phone: { phone_number: phone ?? null },
         Message: { rich_text: message ? [{ text: { content: message } }] : [] },
