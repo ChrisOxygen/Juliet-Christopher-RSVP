@@ -2,7 +2,11 @@ import type { Metadata, Viewport } from "next";
 import { Great_Vibes, Cormorant_Garamond } from "next/font/google";
 import "./globals.css";
 
-const script = Great_Vibes({ weight: "400", subsets: ["latin"], variable: "--font-script-loaded" });
+const script = Great_Vibes({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-script-loaded",
+});
 const serif = Cormorant_Garamond({
   weight: ["400", "500", "600", "700"],
   style: ["normal", "italic"],
@@ -12,7 +16,8 @@ const serif = Cormorant_Garamond({
 
 export const metadata: Metadata = {
   title: "Juliet & Christopher | RSVP",
-  description: "Kindly respond to the wedding invitation of Juliet John & Christopher Okafor, 23rd December 2026.",
+  description:
+    "Kindly respond to the wedding invitation of Juliet John & Christopher Okafor, 23rd December 2026.",
 };
 
 export const viewport: Viewport = {
@@ -21,10 +26,18 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <html lang="en" className={`${script.variable} ${serif.variable}`}>
-      <body>{children}</body>
+    <html
+      suppressHydrationWarning
+      lang="en"
+      className={`${script.variable} ${serif.variable}`}
+    >
+      <body suppressHydrationWarning>{children}</body>
     </html>
   );
 }
